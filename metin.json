@@ -1,0 +1,15 @@
+{
+  "name": "vilsan-su-sistemleri-server",
+  "version": "1.0.0",
+  "description": "Vilsan Su Sistemleri Kontrol Formu ve Yönetici Paneli Sunucusu",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "better-sqlite3": "^9.4.3"
+  }
+}

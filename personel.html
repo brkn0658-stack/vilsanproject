@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Su Sistemleri Günlük Kontrol Formu · Vilsan</title>
+<style>
+  :root{
+    --bg:#F2F4F3; --surface:#FFFFFF; --surface-sunken:#EBEEEC; --ink:#152026;
+    --ink-muted:#5C6B72; --ink-faint:#8B979C; --line:#DCE2E1; --line-strong:#C3CBC9;
+    --accent:#0E7A82; --accent-deep:#0A5B62; --accent-tint:#E3F1F1; --ok:#2C7A4B;
+    --ok-tint:#E5F3EA; --danger:#B03A2E; --danger-tint:#FBEAE7; --warn:#A9740B;
+    --warn-tint:#FBF1DD; --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace; --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--font-sans); -webkit-font-smoothing:antialiased; line-height:1.45;}
+  #app{max-width:1180px;margin:0 auto;padding:0 20px 80px;}
+
+  .topbar{position:sticky; top:0; z-index:30; background:var(--ink); color:#fff; padding:14px 20px; margin:0 -20px 22px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; border-bottom:3px solid var(--accent);}
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .brand .mark{font-weight:800; letter-spacing:0.02em; font-size:18px;}
+  .brand .title{font-size:14px; color:#C9D3D2; font-weight:500;}
+  .brand .doc-code{font-family:var(--font-mono); font-size:11px; color:#8FA6A4; display:block; margin-top:2px;}
+  
+  .admin-link-btn{
+    background:var(--accent); color:#fff; text-decoration:none; font-size:13px; font-weight:600;
+    padding:8px 16px; border-radius:999px; transition:background .15s ease;
+  }
+  .admin-link-btn:hover{background:var(--accent-deep);}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:16px;}
+  .card-pad{padding:18px 20px;}
+  h2.section-title{margin:0; padding:12px 20px; font-size:14px; font-weight:700; background:var(--accent); color:#fff; letter-spacing:0.01em; border-radius:var(--radius) var(--radius) 0 0; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  h2.section-title .count{font-family:var(--font-mono); font-size:11px; font-weight:500; opacity:0.85;}
+
+  .field-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:4px;}
+  .field{display:flex; flex-direction:column; gap:5px; flex:1; min-width:150px;}
+  .field label{font-size:11.5px; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.04em;}
+  .field input[type=text], .field input[type=date], .field input[type=time], .field select{border:1px solid var(--line-strong); border-radius:var(--radius); padding:9px 10px; font-family:var(--font-sans); font-size:14px; color:var(--ink); background:#fff;}
+  .field select{font-weight:600; cursor:pointer;}
+  .field input:focus, .field select:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent);}
+  .error-text{color:var(--danger); font-size:12px; font-weight:600; margin-top:4px;}
+
+  .role-select-box { background: var(--accent-tint); border: 1px solid #BCE3E3; padding: 12px; border-radius: var(--radius); margin-bottom: 12px; }
+
+  .progress-wrap{margin:14px 0 20px;}
+  .progress-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .progress-top .label{font-size:12px; color:var(--ink-muted); font-weight:600;}
+  .progress-top .num{font-family:var(--font-mono); font-size:12px; color:var(--ink);}
+  .progress-track{height:6px; background:var(--surface-sunken); border-radius:999px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--accent); transition:width .2s ease;}
+
+  .item-table{width:100%; border-collapse:collapse;}
+  .item-table thead th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-faint); font-weight:700; padding:8px 10px; border-bottom:1px solid var(--line);}
+  .item-table td{padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; font-size:13.5px;}
+  .item-table tbody tr:last-child td{border-bottom:none;}
+  .item-table tbody tr:hover{background:var(--surface-sunken);}
+  .col-no{font-family:var(--font-mono); color:var(--ink-faint); width:34px;}
+  .col-name{min-width:230px;}
+  .col-unit{font-family:var(--font-mono); color:var(--ink-muted); white-space:nowrap; width:70px;}
+  .col-range{font-family:var(--font-mono); color:var(--ink-muted); white-space:nowrap; width:120px; font-size:12.5px;}
+  .col-value{width:150px;}
+  .col-status{width:26px; text-align:center;}
+  .value-input{width:100%; border:1px solid var(--line-strong); border-radius:var(--radius); padding:7px 8px; font-family:var(--font-mono); font-size:13.5px; color:var(--ink); background:#fff;}
+  .value-input:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  select.value-input{font-family:var(--font-sans);}
+  .status-dot{width:9px; height:9px; border-radius:50%; display:inline-block; background:var(--line-strong);}
+  .status-dot.ok{background:var(--ok);}
+  .status-dot.bad{background:var(--danger);}
+  .custom-tag{font-size:10px; color:var(--accent-deep); background:var(--accent-tint); padding:1px 6px; border-radius:999px; margin-left:6px; font-weight:700;}
+
+  textarea{width:100%; border:1px solid var(--line-strong); border-radius:var(--radius); padding:10px; font-family:var(--font-sans); font-size:14px; color:var(--ink); resize:vertical; min-height:70px;}
+  textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+
+  .btn{border:none; border-radius:var(--radius); padding:11px 22px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .btn-primary{background:var(--accent); color:#fff;}
+  .btn-primary:hover{background:var(--accent-deep);}
+  .btn-primary:disabled{background:var(--line-strong); color:#fff; cursor:not-allowed;}
+
+  .banner{padding:12px 16px; border-radius:var(--radius); font-size:13.5px; margin-bottom:16px; font-weight:600;}
+  .banner-success{background:var(--ok-tint); color:var(--ok); border:1px solid #BFE0CB;}
+  .banner-error{background:var(--danger-tint); color:var(--danger); border:1px solid #F1C7C0;}
+
+  @media (max-width:720px){
+    .item-table thead{display:none;}
+    .item-table, .item-table tbody, .item-table tr, .item-table td{display:block; width:100%;}
+    .item-table tr{border-bottom:1px solid var(--line); padding:10px 0;}
+    .item-table td{border:none; padding:3px 0;}
+    .col-name{font-weight:700;}
+    .col-unit::before{content:"Birim: "; color:var(--ink-faint); font-family:var(--font-sans);}
+    .col-range::before{content:"Aralık: "; color:var(--ink-faint); font-family:var(--font-sans);}
+    .col-value{display:flex; align-items:center; gap:8px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ROL TANIMLAMALARI VE İZİNLİ KATEGORİLER
+  const ROLES = [
+    { id: 'all', name: 'Tüm Sistemler (Genel Sorumlu)', sections: ['ham-yumusak', 'saf-su', 'saf-buhar', 'enjeksiyonlu'] },
+    { id: 'ham-saf', name: 'Ham Su & Saf Su Teknisyeni', sections: ['ham-yumusak', 'saf-su'] },
+    { id: 'buhar', name: 'Saf Buhar Operatörü', sections: ['saf-buhar'] },
+    { id: 'enjeksiyon', name: 'Enjeksiyonlu Saf Su Operatörü', sections: ['enjeksiyonlu'] },
+    { id: 'saf-buhar-enj', name: 'Buhar & Enjeksiyon Sorumlusu', sections: ['saf-buhar', 'enjeksiyonlu'] }
+  ];
+
+  const SECTIONS = [
+    { id:'ham-yumusak', title:'Ham Su, Yumuşak Su Sistemleri', items:[
+      {id:'hy1',no:1,name:'Şebeke suyu basıncı',unit:'bar',range:'2-8',type:'number'},
+      {id:'hy2',no:2,name:'Şebeke suyu sayaç değer',unit:'m³',range:'-',type:'number'},
+      {id:'hy3',no:3,name:'Şebeke suyu tankı seviye göstergesi',unit:'Doluluk Oranı',range:'Boş / Yarı dolu / Tam dolu',type:'select',options:['Boş','Yarı dolu','Tam dolu']},
+      {id:'hy4',no:4,name:'Yumuşak Su giriş basıncı CB SYS 01',unit:'bar',range:'3-6',type:'number'},
+      {id:'hy5',no:5,name:'Yumuşak Su Giriş Filtre 274S-AN Basınç',unit:'bar',range:'2,5-5,5',type:'number'},
+      {id:'hy6',no:6,name:'Yumuşak Su Tankı Seviye Göstergesi',unit:'Doluluk Oranı',range:'Boş / Yarı dolu / Tam dolu',type:'select',options:['Boş','Yarı dolu','Tam dolu']},
+    ]},
+    { id:'saf-su', title:'Saf Su Sistemi', items:[
+      {id:'ss1',no:1,name:'Ham su Yumuşatma Tankı Çıkış Sertlik Değer',unit:'°fr',range:'≤10',type:'number'},
+      {id:'ss2',no:2,name:'Kum Filtre Giriş Su Debisi',unit:'m³',range:'-',type:'number'},
+      {id:'ss3',no:5,name:'EDI Çıkış İletkenlik',unit:'µS/cm',range:'<1',type:'number'},
+      {id:'ss4',no:6,name:'EDI Çıkış Sıcaklık',unit:'°C',range:'<25',type:'number'},
+      {id:'ss5',no:7,name:'EDI Giriş Rotametre Değer RM-108',unit:'L/H',range:'-',type:'number'},
+      {id:'ss6',no:8,name:'EDI Giriş Rotametre Değer RM-109',unit:'L/H',range:'-',type:'number'},
+      {id:'ss7',no:9,name:'EDI Giriş Basıncı',unit:'bar',range:'0.5-2.5',type:'number'},
+      {id:'ss8',no:10,name:'Saf Su A Blok Loop Dönüş Su İletkenlik',unit:'µS/cm',range:'<1',type:'number'},
+      {id:'ss9',no:11,name:'Saf Su A Blok Loop Dönüş Su Sıcaklık',unit:'°C',range:'18-22',type:'number'},
+      {id:'ss10',no:12,name:'Saf Su A Blok Tank Seviyesi',unit:'%',range:'>25',type:'number'},
+      {id:'ss11',no:13,name:'Saf Su A Blok TOC',unit:'ppb',range:'<100',type:'number'},
+      {id:'ss12',no:14,name:'Saf Su A Blok UV Lamba Çalışma Saati',unit:'saat',range:'<5000',type:'number'},
+      {id:'ss13',no:15,name:'Saf Su B Blok Loop Dönüş Su İletkenlik',unit:'µS/cm',range:'<1',type:'number'},
+      {id:'ss14',no:16,name:'Saf Su B Blok Loop Dönüş Su Sıcaklık',unit:'°C',range:'18-22',type:'number'},
+      {id:'ss15',no:17,name:'Saf Su B Blok Tank Seviyesi',unit:'%',range:'>25',type:'number'},
+      {id:'ss16',no:18,name:'Saf Su B Blok TOC',unit:'ppb',range:'<100',type:'number'},
+      {id:'ss17',no:19,name:'Saf Su B Blok UV Lamba Çalışma Saati',unit:'saat',range:'<5000',type:'number'},
+    ]},
+    { id:'saf-buhar', title:'Saf Buhar Sistemi', items:[
+      {id:'sb1',no:1,name:'Giriş pnömatik hava basıncı',unit:'bar',range:'5-7',type:'number'},
+      {id:'sb2',no:2,name:'A Blok Saf Su Besleme Flow metre akış debisi',unit:'m³',range:'<500',type:'number'},
+      {id:'sb3',no:3,name:'B Blok Saf Su Besleme Flow metre akış debisi',unit:'m³',range:'<500',type:'number'},
+      {id:'sb4',no:4,name:'A Blok Buhar Jeneratörü Çıkış Buhar Basıncı',unit:'bar',range:'2-4',type:'number'},
+      {id:'sb5',no:5,name:'B Blok Buhar Jeneratörü Çıkış Buhar Basıncı',unit:'bar',range:'2-4',type:'number'},
+      {id:'sb6',no:6,name:'A Blok Ön Isıtma Giriş Su Sıcaklığı',unit:'°C',range:'>55',type:'number'},
+      {id:'sb7',no:7,name:'B Blok Ön Isıtma Giriş Su Sıcaklığı',unit:'°C',range:'>55',type:'number'},
+      {id:'sb8',no:8,name:'A Blok Saf Buhar Çıkış Buhar Sıcaklığı',unit:'°C',range:'>140',type:'number'},
+      {id:'sb9',no:9,name:'B Blok Saf Buhar Çıkış Buhar Sıcaklığı',unit:'°C',range:'>140',type:'number'},
+      {id:'sb10',no:10,name:'A Blok Saf Buhar Çıkış İletkenlik',unit:'µS/cm',range:'<1',type:'number'},
+      {id:'sb11',no:11,name:'B Blok Saf Buhar Çıkış İletkenlik',unit:'µS/cm',range:'<1',type:'number'},
+    ]},
+    { id:'enjeksiyonlu', title:'Enjeksiyonlu Saf Sistemi', items:[
+      {id:'ej1',no:1,name:'Giriş pnömatik hava basıncı',unit:'bar',range:'5-7',type:'number'},
+      {id:'ej2',no:2,name:'Saf Su Besleme Flow metre akış debisi',unit:'m³',range:'-',type:'number'},
+      {id:'ej3',no:3,name:'Soğutma Suyu Giriş Sıcaklık Değeri',unit:'°C',range:'<20',type:'number'},
+      {id:'ej4',no:4,name:'Soğutma Suyu Çıkış Sıcaklık Değeri',unit:'°C',range:'<100',type:'number'},
+      {id:'ej5',no:5,name:'Kara Buhar Giriş Basıncı',unit:'bar',range:'5-7',type:'number'},
+      {id:'ej6',no:6,name:'A Blok WFI Tankı Çıkış Su Basıncı',unit:'bar',range:'>3.5',type:'number'},
+      {id:'ej7',no:7,name:'A Blok WFI Tankı Su Seviyesi',unit:'%',range:'>25',type:'number'},
+      {id:'ej8',no:8,name:'A Blok WFI Tankı Çıkış TOC değeri',unit:'ppb',range:'<100',type:'number'},
+      {id:'ej9',no:9,name:'A Blok WFI Loop dönüşü Su Sıcaklığı',unit:'°C',range:'84-88',type:'number'},
+      {id:'ej10',no:10,name:'A Blok WFI Loop dönüşü Su İletkenliği',unit:'µS/cm',range:'<0.3',type:'number'},
+      {id:'ej11',no:11,name:'B Blok WFI Tankı Çıkış Su Basıncı',unit:'bar',range:'>3.5',type:'number'},
+      {id:'ej12',no:12,name:'B Blok WFI Tankı Su Seviyesi',unit:'%',range:'>25',type:'number'},
+      {id:'ej13',no:13,name:'B Blok WFI Tankı Çıkış TOC değeri',unit:'ppb',range:'<100',type:'number'},
+      {id:'ej14',no:14,name:'B Blok WFI Loop dönüşü Su Sıcaklığı',unit:'°C',range:'84-88',type:'number'},
+      {id:'ej15',no:15,name:'B Blok WFI Loop dönüşü Su İletkenliği',unit:'µS/cm',range:'<0.3',type:'number'},
+    ]},
+  ];
+
+  function todayStr(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function nowTimeStr(){ const d = new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+  function parseRange(rangeStr){
+    if(!rangeStr) return null;
+    let s = rangeStr.trim();
+    if(s === '-' || s === '') return null;
+    s = s.replace(/,/g,'.');
+    if(s.startsWith('≤')) return {max:parseFloat(s.slice(1)), maxIncl:true};
+    if(s.startsWith('<')) return {max:parseFloat(s.slice(1)), maxIncl:false};
+    if(s.startsWith('≥')) return {min:parseFloat(s.slice(1)), minIncl:true};
+    if(s.startsWith('>')) return {min:parseFloat(s.slice(1)), minIncl:false};
+    const m = s.match(/^(-?\d+(\.\d+)?)\s*-\s*(-?\d+(\.\d+)?)$/);
+    if(m) return {min:parseFloat(m[1]), max:parseFloat(m[3]), minIncl:true, maxIncl:true};
+    return null;
+  }
+
+  function checkValue(value, rangeStr){
+    if(value === undefined || value === null || String(value).trim() === '') return 'empty';
+    const range = parseRange(rangeStr);
+    if(!range) return 'neutral';
+    const v = parseFloat(String(value).replace(',','.'));
+    if(isNaN(v)) return 'neutral';
+    if(range.min !== undefined){ if(range.minIncl ? v < range.min : v <= range.min) return 'bad'; }
+    if(range.max !== undefined){ if(range.maxIncl ? v > range.max : v >= range.max) return 'bad'; }
+    return 'ok';
+  }
+
+  const state = {
+    selectedRole: '', // Başlangıçta boş
+    personnelName: '',
+    date: todayStr(),
+    time: nowTimeStr(),
+    values: {},
+    note: '',
+    nameError: false,
+    roleError: false,
+    submitting: false,
+    submitBanner: null,
+    customItems: {}
+  };
+
+  async function loadCustomItems(){
+    try{
+      const res = await fetch('/api/custom-items');
+      const data = await res.json();
+      if(data.success) state.customItems = data.customItems;
+    }catch(e){ console.error(e); }
+    render();
+  }
+
+  // SADECE SEÇİLİ ROLE AİT KATEGORİLERİ GETİRİR
+  function filteredSections(){
+    if(!state.selectedRole) return [];
+    const roleObj = ROLES.find(r => r.id === state.selectedRole);
+    if(!roleObj) return [];
+
+    return SECTIONS
+      .filter(sec => roleObj.sections.includes(sec.id))
+      .map(sec => ({
+        ...sec,
+        items: sec.items.concat((state.customItems[sec.id] || []))
+      }));
+  }
+
+  const app = document.getElementById('app');
+
+  function render(){
+    const secs = filteredSections();
+    let total = 0, filled = 0;
+    secs.forEach(s => s.items.forEach(it => {
+      total++;
+      if(state.values[it.id] !== undefined && String(state.values[it.id]).trim() !== '') filled++;
+    }));
+    const pct = total ? Math.round((filled/total)*100) : 0;
+
+    let bannerHtml = '';
+    if(state.submitBanner){
+      bannerHtml = `<div class="banner ${state.submitBanner.type==='success'?'banner-success':'banner-error'}">${state.submitBanner.text}</div>`;
+    }
+
+    app.innerHTML = `
+    <div class="topbar">
+      <div class="brand">
+        <span class="mark">VİLSAN</span>
+        <span class="title">Su Sistemleri Günlük Kontrol Formu</span>
+        <span class="doc-code">SOP_VIL_TEK006-Ek18_R01</span>
+      </div>
+      <a href="yonetici.html" class="admin-link-btn">Yönetici Girişi</a>
+    </div>
+
+    <div class="card card-pad">
+      ${bannerHtml}
+      
+      <!-- ROL SEÇİM ALANI -->
+      <div class="role-select-box">
+        <div class="field">
+          <label style="color:var(--accent-deep); font-size:12px;">Sorumluluk Alanınız / Rolünüzü Seçin *</label>
+          <select id="f-role">
+            <option value="">— Lütfen Rolünüzü Seçin —</option>
+            ${ROLES.map(r => `<option value="${r.id}" ${state.selectedRole===r.id?'selected':''}>${escapeHtml(r.name)}</option>`).join('')}
+          </select>
+          ${state.roleError ? '<div class="error-text">Formu doldurabilmek için bir rol seçmelisiniz.</div>' : ''}
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" style="flex:2;">
+          <label>Ad Soyad</label>
+          <input type="text" id="f-name" value="${escapeAttr(state.personnelName)}" placeholder="Adınızı ve soyadınızı yazın">
+          ${state.nameError ? '<div class="error-text">Ad soyad alanı zorunludur.</div>' : ''}
+        </div>
+        <div class="field">
+          <label>Tarih</label>
+          <input type="date" id="f-date" value="${state.date}">
+        </div>
+        <div class="field">
+          <label>Saat</label>
+          <input type="time" id="f-time" value="${state.time}">
+        </div>
+      </div>
+
+      ${state.selectedRole ? `
+      <div class="progress-wrap">
+        <div class="progress-top">
+          <span class="label">Doldurulan alan</span>
+          <span class="num">${filled} / ${total}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      </div>
+      ` : ''}
+    </div>
+
+    ${state.selectedRole ? secs.map(sectionHtml).join('') : '<div style="text-align:center; padding:40px; color:var(--ink-muted); font-weight:600;">Lütfen kontrol formunu görüntülemek için yukarıdan rolünüzü seçin.</div>'}
+
+    ${state.selectedRole ? `
+    <div class="card card-pad">
+      <div class="field">
+        <label>Açıklama</label>
+        <textarea id="f-note" placeholder="Varsa ek not, arıza veya gözlem yazın">${escapeHtml(state.note)}</textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <button class="btn btn-primary" id="btn-submit" ${state.submitting?'disabled':''}>
+        ${state.submitting ? 'Gönderiliyor…' : 'Formu Gönder'}
+      </button>
+    </div>
+    ` : ''}
+    `;
+
+    bindEvents();
+  }
+
+  function sectionHtml(section){
+    return `
+    <div class="card">
+      <h2 class="section-title">
+        <span>${escapeHtml(section.title)}</span>
+        <span class="count">${section.items.length} kalem</span>
+      </h2>
+      <div class="card-pad" style="padding-top:6px; padding-bottom:6px;">
+        <table class="item-table">
+          <thead>
+            <tr>
+              <th class="col-no">No</th>
+              <th class="col-name">Kontrol</th>
+              <th class="col-unit">Birim</th>
+              <th class="col-range">Aralık</th>
+              <th class="col-value">Değer</th>
+              <th class="col-status"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${section.items.map(it => itemRowHtml(it)).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  function itemRowHtml(it){
+    const val = state.values[it.id] !== undefined ? state.values[it.id] : '';
+    const status = checkValue(val, it.type === 'select' ? null : it.range);
+    const dotClass = status === 'ok' ? 'ok' : (status === 'bad' ? 'bad' : '');
+    let inputHtml;
+    if(it.type === 'select'){
+      inputHtml = `<select class="value-input" data-item="${it.id}">
+        <option value="">—</option>
+        ${it.options.map(o => `<option value="${escapeAttr(o)}" ${val===o?'selected':''}>${escapeHtml(o)}</option>`).join('')}
+      </select>`;
+    } else {
+      inputHtml = `<input type="text" inputmode="decimal" class="value-input" data-item="${it.id}" value="${escapeAttr(val)}" placeholder="—">`;
+    }
+    return `
+    <tr>
+      <td class="col-no">${it.no}</td>
+      <td class="col-name">${escapeHtml(it.name)}${it.custom?'<span class="custom-tag">özel</span>':''}</td>
+      <td class="col-unit">${escapeHtml(it.unit)}</td>
+      <td class="col-range">${escapeHtml(it.range || '-')}</td>
+      <td class="col-value">${inputHtml}</td>
+      <td class="col-status"><span class="status-dot ${dotClass}"></span></td>
+    </tr>`;
+  }
+
+  function bindEvents(){
+    const roleSelect = document.getElementById('f-role');
+    if(roleSelect){
+      roleSelect.addEventListener('change', e => {
+        state.selectedRole = e.target.value;
+        state.roleError = false;
+        render();
+      });
+    }
+
+    const nameInput = document.getElementById('f-name');
+    if(nameInput){
+      nameInput.addEventListener('input', e => { state.personnelName = e.target.value; state.nameError=false; });
+    }
+
+    const dateInput = document.getElementById('f-date');
+    if(dateInput) dateInput.addEventListener('input', e => { state.date = e.target.value; });
+
+    const timeInput = document.getElementById('f-time');
+    if(timeInput) timeInput.addEventListener('input', e => { state.time = e.target.value; });
+
+    const noteInput = document.getElementById('f-note');
+    if(noteInput) noteInput.addEventListener('input', e => { state.note = e.target.value; });
+
+    app.querySelectorAll('.value-input').forEach(el => {
+      el.addEventListener('input', e => {
+        state.values[el.dataset.item] = e.target.value;
+        render();
+        const again = document.querySelector(`[data-item="${el.dataset.item}"]`);
+        if(again && again.type==='text'){
+          again.focus();
+          const p = again.value.length;
+          try{ again.setSelectionRange(p,p); }catch(_e){}
+        }
+      });
+    });
+
+    const submitBtn = document.getElementById('btn-submit');
+    if(submitBtn) submitBtn.addEventListener('click', submitForm);
+  }
+
+  async function submitForm(){
+    let hasError = false;
+    
+    if(!state.selectedRole){
+      state.roleError = true;
+      hasError = true;
+    }
+
+    if(!state.personnelName.trim()){
+      state.nameError = true;
+      hasError = true;
+    }
+
+    if(hasError){
+      render();
+      return;
+    }
+
+    state.submitting = true;
+    render();
+
+    try{
+      const res = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: state.date,
+          time: state.time,
+          personnelName: state.personnelName.trim(),
+          values: state.values,
+          note: state.note ? `[Rol: ${ROLES.find(r=>r.id===state.selectedRole)?.name}] ${state.note}` : `[Rol: ${ROLES.find(r=>r.id===state.selectedRole)?.name}]`
+        })
+      });
+      const data = await res.json();
+      if(data.success){
+        state.submitBanner = { type: 'success', text: 'Form başarıyla kaydedildi ✓' };
+        state.values = {};
+        state.note = '';
+        state.time = nowTimeStr();
+      } else {
+        state.submitBanner = { type: 'error', text: data.message || 'Bir hata oluştu.' };
+      }
+    }catch(err){
+      state.submitBanner = { type: 'error', text: 'Sunucuya bağlanılamadı.' };
+    }
+    state.submitting = false;
+    render();
+  }
+
+  function escapeHtml(str){ return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  loadCustomItems();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yönetici Paneli · Vilsan Su Sistemleri</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #F2F4F3; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; color: #333; }
+  
+  /* GİRİŞ EKRANI STİLLERİ */
+  .login-wrapper { display: flex; justify-content: center; align-items: center; height: 100vh; }
+  .login-card { background: #fff; padding: 30px; border-radius: 6px; border: 1px solid #DCE2E1; width: 100%; max-width: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .login-card h2 { margin-top: 0; color: #0E7A82; font-size: 20px; text-align: center; }
+  .field { margin-bottom: 15px; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: #5C6B72; margin-bottom: 5px; text-transform: uppercase; }
+  .field input { width: 100%; padding: 10px; border: 1px solid #C3CBC9; border-radius: 4px; font-size: 14px; }
+  .btn { width: 100%; padding: 12px; background: #0E7A82; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 14px; }
+  .btn:hover { background: #0A5B62; }
+  .error-msg { background: #FBEAE7; color: #B03A2E; padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 15px; display: none; }
+
+  /* YÖNETİCİ PANELİ STİLLERİ */
+  #adminPanelSection { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
+  header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 6px; border: 1px solid #DCE2E1; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  header h1 { margin: 0; font-size: 20px; color: #0E7A82; }
+  .user-info { display: flex; align-items: center; gap: 10px; }
+  
+  .btn-pw-change { background: #0E7A82; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; text-decoration: none; }
+  .btn-pw-change:hover { background: #0A5B62; }
+  
+  .btn-logout { background: #B03A2E; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+  .btn-logout:hover { background: #8E2E24; }
+
+  .table-container { background: #fff; border-radius: 6px; border: 1px solid #DCE2E1; padding: 20px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+  th, td { padding: 12px; border-bottom: 1px solid #EAEAEA; }
+  th { background: #F7F9F8; color: #5C6B72; text-transform: uppercase; font-size: 12px; }
+  tr:hover { background: #F9FBFB; }
+
+  /* DOLULUK VE SİLME BUTONU STİLLERİ */
+  .badge-full { background: #E8F8F5; color: #117A65; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+  .badge-partial { background: #FEF9E7; color: #B7950B; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; }
+  .btn-delete { background: #C0392B; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+  .btn-delete:hover { background: #962D22; }
+</style>
+</head>
+<body>
+
+<!-- 1. GİRİŞ EKRANI -->
+<div id="loginSection" class="login-wrapper">
+  <div class="login-card">
+    <h2>Vilsan Yönetici Girişi</h2>
+    <div id="error-msg" class="error-msg"></div>
+    <form id="login-form">
+      <div class="field">
+        <label>Kullanıcı Adı</label>
+        <input type="text" id="username" required placeholder="Örn: admin">
+      </div>
+      <div class="field">
+        <label>Şifre</label>
+        <input type="password" id="password" required placeholder="Örn: admin123">
+      </div>
+      <button type="submit" class="btn">Giriş Yap</button>
+    </form>
+  </div>
+</div>
+
+<!-- 2. ASIL YÖNETİCİ PANELİ -->
+<div id="adminPanelSection">
+  <header>
+    <h1>Vilsan Su Sistemleri - Veri Yönetim Paneli</h1>
+    <div class="user-info">
+      <span id="welcomeUser">Hoşgeldiniz, Yönetici</span>
+      
+      <!-- ŞİFRE DEĞİŞTİRME YÖNLENDİRME BUTONU -->
+      <a href="passwordchange.html" class="btn-pw-change">Şifre Değiştir</a>
+      
+      <button class="btn-logout" onclick="cikisYap()">Çıkış Yap</button>
+    </div>
+  </header>
+
+  <div class="table-container">
+    <h3>Sisteme Kaydedilen Formlar</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tarih / Saat</th>
+          <th>Personel</th>
+          <th>Açıklama / Not</th>
+          <th>Doluluk Durumu</th>
+          <th>İşlem</th>
+        </tr>
+      </thead>
+      <tbody id="submissionsTable">
+        <tr>
+          <td colspan="5" style="text-align:center;">Veriler yükleniyor...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  window.addEventListener('DOMContentLoaded', checkAuth);
+
+  async function checkAuth() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.authenticated) {
+        showPanel(data.user);
+      }
+    } catch (err) {
+      console.error('Oturum kontrol hatası:', err);
+    }
+  }
+
+  // GİRİŞ FORMU
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const usernameInput = document.getElementById('username').value;
+    const passwordInput = document.getElementById('password').value;
+    const errorMsg = document.getElementById('error-msg');
+
+    errorMsg.style.display = 'none';
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: usernameInput, password: passwordInput })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showPanel(data.user);
+      } else {
+        errorMsg.innerText = data.message || 'Kullanıcı adı veya şifre hatalı!';
+        errorMsg.style.display = 'block';
+      }
+    } catch (err) {
+      errorMsg.innerText = 'Sunucuyla bağlantı kurulamadı!';
+      errorMsg.style.display = 'block';
+    }
+  });
+
+  function showPanel(user) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminPanelSection').style.display = 'block';
+    document.getElementById('welcomeUser').innerText = `Hoşgeldin, ${user.fullName || user.username}`;
+    verileriGetir();
+  }
+
+  // FORMLARI LİSTELE
+  async function verileriGetir() {
+    try {
+      const res = await fetch('/api/submissions');
+      const data = await res.json();
+
+      if (data.success) {
+        const tbody = document.getElementById('submissionsTable');
+        tbody.innerHTML = '';
+
+        if (data.submissions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Henüz kayıtlı veri bulunmuyor.</td></tr>';
+          return;
+        }
+
+        data.submissions.forEach(sub => {
+          const valuesObj = sub.values || {};
+          const totalKeys = Object.keys(valuesObj).length;
+          const filledKeys = Object.values(valuesObj).filter(val => val !== null && String(val).trim() !== '').length;
+          
+          let statusBadge = '';
+          if (totalKeys > 0 && filledKeys === totalKeys) {
+            statusBadge = `<span class="badge-full">Eksiksiz Dolduruldu (${filledKeys}/${totalKeys})</span>`;
+          } else if (filledKeys > 0) {
+            statusBadge = `<span class="badge-partial">Kısmen Dolduruldu (${filledKeys}/${totalKeys})</span>`;
+          } else {
+            statusBadge = `<span class="badge-partial" style="background:#FADBD8; color:#78281F;">Boş Form</span>`;
+          }
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${sub.date}</strong> - ${sub.time}</td>
+            <td>${escapeHtml(sub.personnelName)}</td>
+            <td>${escapeHtml(sub.note || '-')}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn-delete" onclick="formSil('${sub.id}')">Sil</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    } catch (err) {
+      console.error('Veriler çekilemedi:', err);
+    }
+  }
+
+  // FORM SİLME FONKSİYONU (Geliştirilmiş Hata Yönetimi)
+  async function formSil(id) {
+    if (!confirm('Bu kayıtlı formu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/submissions/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Sunucu Hatası: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        verileriGetir(); // Tabloyu güncelle
+      } else {
+        alert(data.message || 'Silme işlemi başarısız.');
+      }
+    } catch (err) {
+      console.error('Silme hatası:', err);
+      alert(`Silme İşlemi Başarısız: ${err.message}`);
+    }
+  }
+
+  // ÇIKIŞ YAP
+  async function cikisYap() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    document.getElementById('adminPanelSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'flex';
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+
+</body>
+</html>
